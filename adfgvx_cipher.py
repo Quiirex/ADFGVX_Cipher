@@ -3,10 +3,10 @@ from tkinter import filedialog
 from tkinter import messagebox
 
 
-class ADFGVXCipher:
+class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
-        self.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZČŠŽ"
+        self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ"
 
     def encrypt(self, text, key):
         encrypted_text = ""
@@ -30,35 +30,52 @@ class ADFGVXCipher:
         return decrypted_text
 
 
-class CipherGUI:
+class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("ADFGVX Cipher")
-        self.cipher = ADFGVXCipher()
+        self.cipher = ADFGVX()
 
-        self.text_label = tk.Label(root, text="Enter Text:")
-        self.text_label.pack()
-        self.text_entry = tk.Entry(root, width=30)
-        self.text_entry.pack()
+        # input frame
+        self.input_frame = tk.Frame(root)
+        self.input_frame.grid(row=0, column=0, padx=20)
 
-        self.key_label = tk.Label(root, text="Enter Key:")
-        self.key_label.pack()
-        self.key_entry = tk.Entry(root, show="*", width=30)
-        self.key_entry.pack()
+        self.text_label = tk.Label(self.input_frame, text="Enter Text:")
+        self.text_label.grid(row=0, column=0)
+        self.text_entry = tk.Text(self.input_frame, width=50, height=10)
+        self.text_entry.grid(row=1, column=0)
+
+        self.key_label = tk.Label(self.input_frame, text="Enter Key:")
+        self.key_label.grid(row=2, column=0)
+        self.key_entry = tk.Text(self.input_frame, width=50, height=10)
+        self.key_entry.grid(row=3, column=0)
+
+        # button frame
+        self.button_frame = tk.Frame(root)
+        self.button_frame.grid(row=4, column=0, padx=20, pady=20)
+
+        self.encrypt_button = tk.Button(
+            self.button_frame, text="Encrypt", command=self.encrypt_text, width=10
+        )
+        self.encrypt_button.grid(row=1, column=0)
+
+        self.decrypt_button = tk.Button(
+            self.button_frame, text="Decrypt", command=self.decrypt_text, width=10
+        )
+        self.decrypt_button.grid(row=1, column=1)
 
         self.load_file_button = tk.Button(
-            root, text="Load Text from File", command=self.load_text_from_file
+            self.button_frame,
+            text="Open file",
+            command=self.load_text_from_file,
+            width=10,
         )
-        self.load_file_button.pack()
+        self.load_file_button.grid(row=2, column=0)
 
-        self.encrypt_button = tk.Button(root, text="Encrypt", command=self.encrypt_text)
-        self.encrypt_button.pack()
-
-        self.decrypt_button = tk.Button(root, text="Decrypt", command=self.decrypt_text)
-        self.decrypt_button.pack()
-
-        self.save_button = tk.Button(root, text="Save Result", command=self.save_result)
-        self.save_button.pack()
+        self.save_button = tk.Button(
+            self.button_frame, text="Save result", command=self.save_result, width=10
+        )
+        self.save_button.grid(row=2, column=1)
 
         self.input_text = ""
 
@@ -98,5 +115,5 @@ class CipherGUI:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = CipherGUI(root)
+    app = GUI(root)
     root.mainloop()

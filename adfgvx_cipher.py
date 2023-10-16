@@ -7,45 +7,68 @@ class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
         self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ"
-        self.keyword = None
+        self.key = None
         self.polybius_square = None
 
-    def create_polybius_square(self, keyword):
+    def create_polybius_square(self, key):
         # Remove duplicate characters from the keyword and convert it to uppercase
-        keyword = "".join(sorted(set(keyword.upper()), key=keyword.upper().index))
+        key = "".join(sorted(set(key.upper()), key=key.upper().index))
 
         # Create the remaining characters for the polybius square
-        remaining_chars = [char for char in self.alphabet if char not in keyword]
+        remaining_chars = [char for char in self.alphabet if char not in key]
         remaining_chars = "".join(remaining_chars)
 
         # Combine the keyword and remaining characters to create the polybius square
-        self.polybius_square = keyword + remaining_chars
+        self.polybius_square = key + remaining_chars
+
+        print(f"Polybius square: {self.polybius_square}")
 
         return True
 
-    def set_keyword(self, keyword):
-        if self.create_polybius_square(keyword):
-            self.keyword = keyword
+    def set_key(self, key):
+        if self.create_polybius_square(key):
+            self.key = key
 
     def encrypt(self, text):
         encrypted_text = ""
+
+        # Iterate over each character in the input text
         for char in text:
+            # If the character is in the polybius square (ignoring case)
             if char.upper() in self.polybius_square:
+                # Find the index of the character in the polybius square
                 index = self.polybius_square.index(char.upper())
+
+                # Calculate the row and column of the character in the polybius square
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
+
+                # Add the corresponding ADFGVX characters to the encrypted text
                 encrypted_text += row + column
+
+        # Return the encrypted text
         return encrypted_text
 
     def decrypt(self, encrypted_text):
         decrypted_text = ""
         i = 0
+
+        # While there are still characters in the encrypted text
         while i < len(encrypted_text):
+            # Get the ADFGVX characters representing the row and column
             row = encrypted_text[i]
             column = encrypted_text[i + 1]
+
+            # Calculate the index of the character in the polybius square
             index = self.adfgvx.index(row) * 6 + self.adfgvx.index(column)
+
+            # Add the corresponding character from the polybius square to the decrypted text
             decrypted_text += self.polybius_square[index]
+
+            # Move to the next pair of ADFGVX characters
             i += 2
+
+        # Return the decrypted text
         return decrypted_text
 
 
@@ -104,7 +127,6 @@ class GUI:
             self.button_frame, text="Decrypt", command=self.decrypt_text, width=10
         )
         self.decrypt_button.grid(row=1, column=2)
-        # endregion
 
         self.input_text = ""
 
@@ -125,8 +147,8 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        keyword = self.key_entry.get("1.0", tk.END).strip()
-        self.cipher.set_keyword(keyword)
+        key = self.key_entry.get("1.0", tk.END).strip()
+        self.cipher.set_key(key)
         encrypted_text = self.cipher.encrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, encrypted_text.strip())
@@ -138,8 +160,8 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        keyword = self.key_entry.get("1.0", tk.END).strip()
-        self.cipher.set_keyword(keyword)
+        key = self.key_entry.get("1.0", tk.END).strip()
+        self.cipher.set_key(key)
         decrypted_text = self.cipher.decrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, decrypted_text.strip())
@@ -172,6 +194,8 @@ class GUI:
             file.write(text)
         messagebox.showinfo("Saved", "Output saved successfully!")
         self.input_text = ""
+
+    # endregion
 
 
 if __name__ == "__main__":

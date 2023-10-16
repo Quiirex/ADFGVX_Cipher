@@ -1,4 +1,5 @@
 import tkinter as tk
+import math
 from tkinter import filedialog
 from tkinter import messagebox
 
@@ -7,7 +8,8 @@ class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
         self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ"
-        self.key = None
+        self.key_phrase = None
+        self.transposition_key = None
         self.polybius_square = None
 
     def create_polybius_square(self, key):
@@ -25,15 +27,29 @@ class ADFGVX:
 
         return True
 
-    def set_key(self, key):
-        if self.create_polybius_square(key):
-            self.key = key
+    def set_key_phrase(self, key_phrase):
+        if self.create_polybius_square(key_phrase):
+            self.key_phrase = key_phrase
+
+    def set_transposition_key(self, transposition_key):
+        self.transposition_key = transposition_key
 
     def encrypt(self, text):
         encrypted_text = ""
 
-        # Iterate over each character in the input text
-        for char in text:
+        # Apply transposition by rearranging the columns based on the transposition key
+        num_columns = len(self.transposition_key)
+        num_rows = math.ceil(len(text) / num_columns)
+        transposed_text = ""
+
+        for i in range(num_columns):
+            column_index = self.transposition_key.index(str(i + 1))
+            for j in range(num_rows):
+                if j * num_columns + column_index < len(text):
+                    transposed_text += text[j * num_columns + column_index]
+
+        # Iterate over each character in the transposed text
+        for char in transposed_text:
             # If the character is in the polybius square (ignoring case)
             if char.upper() in self.polybius_square:
                 # Find the index of the character in the polybius square
@@ -51,25 +67,33 @@ class ADFGVX:
 
     def decrypt(self, encrypted_text):
         decrypted_text = ""
-        i = 0
 
-        # While there are still characters in the encrypted text
-        while i < len(encrypted_text):
-            # Get the ADFGVX characters representing the row and column
-            row = encrypted_text[i]
-            column = encrypted_text[i + 1]
+        # Iterate over each character in the encrypted text
+        for char in encrypted_text:
+            # If the character is in the polybius square (ignoring case)
+            if char.upper() in self.polybius_square:
+                # Find the index of the character in the polybius square
+                index = self.polybius_square.index(char.upper())
 
-            # Calculate the index of the character in the polybius square
-            index = self.adfgvx.index(row) * 6 + self.adfgvx.index(column)
+                # Calculate the row and column of the character in the polybius square
+                row = self.adfgvx[index // 6]
+                column = self.adfgvx[index % 6]
 
-            # Add the corresponding character from the polybius square to the decrypted text
-            decrypted_text += self.polybius_square[index]
+                # Add the corresponding ADFGVX characters to the transposed text
+                decrypted_text += row + column
 
-            # Move to the next pair of ADFGVX characters
-            i += 2
+        # Apply transposition by rearranging the columns based on the transposition key
+        num_columns = len(self.transposition_key)
+        num_rows = len(decrypted_text) // num_columns
+        transposed_text = ""
+
+        for i in range(num_columns):
+            column_index = self.transposition_key.index(str(i + 1))
+            for j in range(num_rows):
+                transposed_text += decrypted_text[j * num_columns + column_index]
 
         # Return the decrypted text
-        return decrypted_text
+        return transposed_text
 
 
 class GUI:
@@ -91,27 +115,24 @@ class GUI:
         )
         self.save_text_button.grid(row=1, column=1)
 
-        self.key_label = tk.Label(self.input_frame, text="Key:")
-        self.key_label.grid(row=2, column=0)
-        self.key_entry = tk.Text(self.input_frame, width=100, height=3)
-        self.key_entry.grid(row=3, column=0)
-        # a button that switches the text from "output_box" to "input_box" and vice versa
-        self.switch_button = tk.Button(
-            self.input_frame,
-            text="Switch I/O",
-            command=lambda: self.switch_text(),
-            width=5,
-        )
-        self.switch_button.grid(row=3, column=1)
+        self.key_phrase_label = tk.Label(self.input_frame, text="Key phrase:")
+        self.key_phrase_label.grid(row=2, column=0)
+        self.key_phrase_entry = tk.Text(self.input_frame, width=100, height=3)
+        self.key_phrase_entry.grid(row=3, column=0)
+
+        self.column_key_label = tk.Label(self.input_frame, text="Column key:")
+        self.column_key_label.grid(row=4, column=0)
+        self.column_key_entry = tk.Text(self.input_frame, width=100, height=3)
+        self.column_key_entry.grid(row=5, column=0)
 
         self.output_label = tk.Label(self.input_frame, text="Output:")
-        self.output_label.grid(row=4, column=0)
+        self.output_label.grid(row=6, column=0)
         self.output_box = tk.Text(self.input_frame, width=100, height=12)
-        self.output_box.grid(row=5, column=0)
+        self.output_box.grid(row=7, column=0)
         self.save_output_button = tk.Button(
             self.input_frame, text="Save as..", command=self.save_output, width=5
         )
-        self.save_output_button.grid(row=5, column=1)
+        self.save_output_button.grid(row=7, column=1)
         # endregion
 
         # region button frame
@@ -126,15 +147,23 @@ class GUI:
         )
         self.load_file_button.grid(row=1, column=0)
 
+        self.switch_button = tk.Button(
+            self.button_frame,
+            text="Switch I/O",
+            command=lambda: self.switch_text(),
+            width=10,
+        )
+        self.switch_button.grid(row=1, column=1)
+
         self.encrypt_button = tk.Button(
             self.button_frame, text="Encrypt", command=self.encrypt_text, width=10
         )
-        self.encrypt_button.grid(row=1, column=1)
+        self.encrypt_button.grid(row=1, column=2)
 
         self.decrypt_button = tk.Button(
             self.button_frame, text="Decrypt", command=self.decrypt_text, width=10
         )
-        self.decrypt_button.grid(row=1, column=2)
+        self.decrypt_button.grid(row=1, column=3)
 
         self.input_text = ""
 
@@ -163,8 +192,10 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        key = self.key_entry.get("1.0", tk.END).strip()
-        self.cipher.set_key(key)
+        key_phrase = self.key_phrase_entry.get("1.0", tk.END).strip()
+        self.cipher.set_key_phrase(key_phrase)
+        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        self.cipher.set_transposition_key(transposition_key)
         encrypted_text = self.cipher.encrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, encrypted_text.strip())
@@ -176,8 +207,10 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        key = self.key_entry.get("1.0", tk.END).strip()
-        self.cipher.set_key(key)
+        key_phrase = self.key_phrase_entry.get("1.0", tk.END).strip()
+        self.cipher.set_key_phrase(key_phrase)
+        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        self.cipher.set_transposition_key(transposition_key)
         decrypted_text = self.cipher.decrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, decrypted_text.strip())

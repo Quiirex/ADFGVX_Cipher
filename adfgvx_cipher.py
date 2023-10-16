@@ -38,11 +38,14 @@ class ADFGVX:
             if char.upper() in self.polybius_square:
                 # Find the index of the character in the polybius square
                 index = self.polybius_square.index(char.upper())
+                # print(f"Index: {index}")
 
                 # Calculate the row and column of the character in the polybius square
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
 
+                # print(f"Row: {row}")
+                # print(f"Column: {column}")
                 # Add the corresponding ADFGVX characters to the encrypted text
                 encrypted_text += row + column
 
@@ -95,6 +98,14 @@ class GUI:
         self.key_label.grid(row=2, column=0)
         self.key_entry = tk.Text(self.input_frame, width=100, height=12)
         self.key_entry.grid(row=3, column=0)
+        # a button that switches the text from "output_box" to "input_box" and vice versa
+        self.switch_button = tk.Button(
+            self.input_frame,
+            text="Switch I/O",
+            command=lambda: self.switch_text(),
+            width=5,
+        )
+        self.switch_button.grid(row=3, column=1)
 
         self.output_label = tk.Label(self.input_frame, text="Output:")
         self.output_label.grid(row=4, column=0)
@@ -128,6 +139,14 @@ class GUI:
         )
         self.decrypt_button.grid(row=1, column=2)
 
+        self.input_text = ""
+
+    def switch_text(self):
+        self.input_text = self.input_box.get("1.0", tk.END).strip()
+        self.input_box.delete("1.0", tk.END)
+        self.input_box.insert(tk.END, self.output_box.get("1.0", tk.END).strip())
+        self.output_box.delete("1.0", tk.END)
+        self.output_box.insert(tk.END, self.input_text)
         self.input_text = ""
 
     def load_text_from_file(self):

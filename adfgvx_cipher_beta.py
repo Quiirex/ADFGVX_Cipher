@@ -8,8 +8,8 @@ class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
         self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ0123456789X"
-        self.substitution_key = None
-        self.transposition_key = None
+        self.substitution_key = None  # key phrase
+        self.transposition_key = None  # column key
 
     def set_substitution_key(self, substitution_key):
         if self.create_polybius_square(substitution_key):
@@ -29,9 +29,9 @@ class ADFGVX:
         # Combine the keyword and remaining characters to create the polybius square
         self.polybius_square = key + remaining_chars
 
-        print("Polybius square:")
-        for i in range(6):
-            print(self.polybius_square[i * 6 : (i + 1) * 6])
+        # print("Polybius square:")
+        # for i in range(6):
+        #     print(self.polybius_square[i * 6 : (i + 1) * 6])
 
         return True
 
@@ -47,7 +47,7 @@ class ADFGVX:
                 column = self.adfgvx[index % 6]
                 encrypted_text += row + column
 
-        print(f"Encrypted text: {encrypted_text}")
+        # print(f"Encrypted text: {encrypted_text}")
 
         # Perform the transposition step using the user-provided key
         transposed_text = [""] * len(self.transposition_key)

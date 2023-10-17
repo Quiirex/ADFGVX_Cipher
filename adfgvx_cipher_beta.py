@@ -11,6 +11,13 @@ class ADFGVX:
         self.substitution_key = None
         self.transposition_key = None
 
+    def set_substitution_key(self, substitution_key):
+        if self.create_polybius_square(substitution_key):
+            self.substitution_key = substitution_key
+
+    def set_transposition_key(self, transposition_key):
+        self.transposition_key = transposition_key
+
     def create_polybius_square(self, key):
         # Remove duplicate characters from the keyword and convert it to uppercase
         key = "".join(sorted(set(key.upper()), key=key.upper().index))
@@ -28,13 +35,6 @@ class ADFGVX:
 
         return True
 
-    def set_substitution_key(self, substitution_key):
-        if self.create_polybius_square(substitution_key):
-            self.substitution_key = substitution_key
-
-    def set_transposition_key(self, transposition_key):
-        self.transposition_key = transposition_key
-
     def encrypt(self, text):
         encrypted_text = ""
         # print(f"text: {text}")
@@ -51,17 +51,16 @@ class ADFGVX:
 
         # Perform the transposition step using the user-provided key
         transposed_text = [""] * len(self.transposition_key)
-        # print(f"transposed_text 1: {transposed_text}")
         for i in range(len(encrypted_text)):
             transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
-            # print(f"transposed_text 2: {transposed_text}")
 
         # Reorder the columns based on the transposition key
         transposed_text = [
-            x for _, x in sorted(zip(self.transposition_key, transposed_text))
+            x
+            for _, x in sorted(
+                zip(self.transposition_key, transposed_text), key=lambda pair: pair[0]
+            )
         ]
-
-        print(f"Transposed encrypted text: {transposed_text}")
 
         return "".join(transposed_text)
 
@@ -118,7 +117,7 @@ class GUI:
         self.input_frame = tk.Frame(root)
         self.input_frame.grid(row=0, column=0, padx=20)
 
-        self.text_label = tk.Label(self.input_frame, text="Text:")
+        self.text_label = tk.Label(self.input_frame, text="Input:")
         self.text_label.grid(row=0, column=0)
         self.input_box = tk.Text(self.input_frame, width=100, height=12)
         self.input_box.grid(row=1, column=0)

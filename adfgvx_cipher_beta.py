@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
-from itertools import zip_longest
 
 
 class ADFGVX:
@@ -86,9 +85,12 @@ class ADFGVX:
             i += length
 
         # Combine the columns to get the original encrypted text (before the transposition step)
-        decrypted_text = "".join(
-            "".join(column) for column in zip_longest(*columns, fillvalue="")
-        )
+        decrypted_text = ""
+        max_len = max(len(column) for column in columns)
+        for i in range(max_len):
+            for column in columns:
+                if i < len(column):
+                    decrypted_text += column[i]
 
         # Reverse the substitution step (Polybius square)
         i = 0

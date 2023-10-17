@@ -6,68 +6,73 @@ from tkinter import messagebox
 class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
-        self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ"
+        self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ0123456789 "
+        self.polybius_square = None
         self.substitution_key = None
         self.transposition_key = None
+
+    def create_polybius_square(self, key):
+        # Remove duplicate characters from the keyword and convert it to uppercase
+        key = "".join(sorted(set(key.upper()), key=key.upper().index))
+
+        # Create the remaining characters for the polybius square
+        remaining_chars = [char for char in self.alphabet if char not in key]
+        remaining_chars = "".join(remaining_chars)
+
+        # Combine the keyword and remaining characters to create the polybius square
+        self.polybius_square = key + remaining_chars
+
+        print(f"Polybius square: {self.polybius_square}")
+
+        return True
+
+    def set_substitution_key(self, substitution_key):
+        if self.create_polybius_square(substitution_key):
+            self.substitution_key = substitution_key
 
     def set_transposition_key(self, transposition_key):
         self.transposition_key = transposition_key
 
-    def set_substitution_key(self, substitution_key):
-        self.substitution_key = substitution_key
-
     def encrypt(self, text):
         encrypted_text = ""
-        print(f"text: {text}")
 
-        # Perform the substitution step (Polybius square)
+        # Iterate over each character in the input text
         for char in text:
-            if char.upper() in self.substitution_key:
-                index = self.substitution_key.index(char.upper())
+            # If the character is in the polybius square (ignoring case)
+            if char.upper() in self.polybius_square:
+                # Find the index of the character in the polybius square
+                index = self.polybius_square.index(char.upper())
+
+                # Calculate the row and column of the character in the polybius square
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
+
+                # Add the corresponding ADFGVX characters to the encrypted text
                 encrypted_text += row + column
 
-        print(f"Encrypted text: {encrypted_text}")
-
-        # Perform the transposition step using the user-provided key
-        transposed_text = [""] * len(self.transposition_key)
-        for i in range(len(encrypted_text)):
-            transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
-
-        # Reorder the columns based on the transposition key
-        transposed_text = [
-            x for _, x in sorted(zip(self.transposition_key, transposed_text))
-        ]
-
-        return "".join(transposed_text)
+        # Return the encrypted text
+        return encrypted_text
 
     def decrypt(self, encrypted_text):
-        # Reverse the transposition step using the user-provided key
-        transposition_key_order = sorted(
-            range(len(self.transposition_key)), key=lambda x: self.transposition_key[x]
-        )
-        columns = [""] * len(self.transposition_key)
-        for i in range(len(encrypted_text)):
-            columns[
-                transposition_key_order[i % len(self.transposition_key)]
-            ] += encrypted_text[i]
-
-        decrypted_text = "".join(columns)
-
-        # Reverse the substitution step (Polybius square)
+        decrypted_text = ""
         i = 0
-        while i < len(decrypted_text):
-            row = decrypted_text[i]
-            column = decrypted_text[i + 1]
-            index = self.adfgvx.index(row) * 6 + self.adfgvx.index(column)
-            decrypted_text = (
-                decrypted_text[:i]
-                + self.substitution_key[index]
-                + decrypted_text[i + 2 :]
-            )
-            i += 1
 
+        # While there are still characters in the encrypted text
+        while i < len(encrypted_text):
+            # Get the ADFGVX characters representing the row and column
+            row = encrypted_text[i]
+            column = encrypted_text[i + 1]
+
+            # Calculate the index of the character in the polybius square
+            index = self.adfgvx.index(row) * 6 + self.adfgvx.index(column)
+
+            # Add the corresponding character from the polybius square to the decrypted text
+            decrypted_text += self.polybius_square[index]
+
+            # Move to the next pair of ADFGVX characters
+            i += 2
+
+        # Return the decrypted text
         return decrypted_text
 
 

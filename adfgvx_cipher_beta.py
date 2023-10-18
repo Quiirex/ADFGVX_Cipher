@@ -130,13 +130,17 @@ class GUI:
 
         self.key_phrase_label = tk.Label(self.input_frame, text="Substitution key:")
         self.key_phrase_label.grid(row=2, column=0)
-        self.key_phrase_entry = tk.Text(self.input_frame, width=100, height=3)
-        self.key_phrase_entry.grid(row=3, column=0)
+        self.substitution_key_entry = tk.Entry(self.input_frame, width=77)
+        self.substitution_key_entry.grid(row=3, column=0)
+        validate_command = self.root.register(self.validate_substitution_key)
+        self.substitution_key_entry.config(
+            validate="key", validatecommand=(validate_command, "%P")
+        )
 
         self.column_key_label = tk.Label(self.input_frame, text="Transposition key:")
         self.column_key_label.grid(row=4, column=0)
-        self.column_key_entry = tk.Text(self.input_frame, width=100, height=3)
-        self.column_key_entry.grid(row=5, column=0)
+        self.transposition_key_entry = tk.Entry(self.input_frame, width=77)
+        self.transposition_key_entry.grid(row=5, column=0)
 
         self.output_label = tk.Label(self.input_frame, text="Output:")
         self.output_label.grid(row=6, column=0)
@@ -180,6 +184,9 @@ class GUI:
 
         self.input_text = ""
 
+    def validate_substitution_key(self, new_value):
+        return new_value == "" or new_value.isalpha()
+
     def switch_text(self):
         self.input_text = self.input_box.get("1.0", tk.END).strip()
         self.input_box.delete("1.0", tk.END)
@@ -205,9 +212,9 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        substitution_key = self.key_phrase_entry.get("1.0", tk.END).strip()
+        substitution_key = self.substitution_key_entry.get().strip()
         self.cipher.set_substitution_key(substitution_key)
-        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        transposition_key = self.transposition_key_entry.get().strip()
         self.cipher.set_transposition_key(transposition_key)
         encrypted_text = self.cipher.encrypt(text)
         self.output_box.delete("1.0", tk.END)
@@ -220,9 +227,9 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        substitution_key = self.key_phrase_entry.get("1.0", tk.END).strip()
+        substitution_key = self.substitution_key_entry.get().strip()
         self.cipher.set_substitution_key(substitution_key)
-        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        transposition_key = self.transposition_key_entry.get().strip()
         self.cipher.set_transposition_key(transposition_key)
         decrypted_text = self.cipher.decrypt(text)
         self.output_box.delete("1.0", tk.END)

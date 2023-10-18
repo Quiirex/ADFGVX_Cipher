@@ -121,12 +121,8 @@ class GUI:
 
         self.text_label = tk.Label(self.input_frame, text="Input:")
         self.text_label.grid(row=0, column=0)
-        self.input_box = tk.Text(self.input_frame, width=100, height=12)
+        self.input_box = tk.Text(self.input_frame, width=100, height=15)
         self.input_box.grid(row=1, column=0)
-        self.save_text_button = tk.Button(
-            self.input_frame, text="Save as..", command=self.save_input, width=5
-        )
-        self.save_text_button.grid(row=1, column=1)
 
         self.key_phrase_label = tk.Label(self.input_frame, text="Substitution key:")
         self.key_phrase_label.grid(row=2, column=0)
@@ -144,7 +140,7 @@ class GUI:
 
         self.output_label = tk.Label(self.input_frame, text="Output:")
         self.output_label.grid(row=6, column=0)
-        self.output_box = tk.Text(self.input_frame, width=100, height=12)
+        self.output_box = tk.Text(self.input_frame, width=100, height=15)
         self.output_box.grid(row=7, column=0)
         self.save_output_button = tk.Button(
             self.input_frame, text="Save as..", command=self.save_output, width=5
@@ -234,20 +230,6 @@ class GUI:
         decrypted_text = self.cipher.decrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, decrypted_text.strip())
-        self.input_text = ""
-
-    def save_input(self):
-        text = (
-            self.input_box.get("1.0", tk.END)
-            if not self.input_text
-            else self.input_text
-        ).strip()
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt", filetypes=[("Text Files", "*.txt")]
-        )
-        with open(file_path, "w") as file:
-            file.write(text)
-        messagebox.showinfo("Saved", "Input saved successfully!")
         self.input_text = ""
 
     def save_output(self):

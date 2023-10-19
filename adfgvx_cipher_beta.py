@@ -53,12 +53,13 @@ class ADFGVX:
         for i in range(len(encrypted_text)):
             transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
 
-        # Reorder the columns based on the transposition key
+        # Make a new key with appended numbers
+        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+
+        # Reorder the columns based on the new key
         transposed_text = [
             x
-            for _, x in sorted(
-                zip(self.transposition_key, transposed_text), key=lambda pair: pair[0]
-            )
+            for _, x in sorted(zip(new_key, transposed_text), key=lambda pair: pair[0])
         ]
 
         return "".join(transposed_text)
@@ -73,15 +74,18 @@ class ADFGVX:
         # Create a list to hold the columns
         columns = [""] * len(self.transposition_key)
 
+        # Make a new key with appended numbers
+        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+
         # Distribute the characters back to their original positions
         i = 0
-        for key in sorted(self.transposition_key):
+        for key in sorted(new_key):
             length = (
                 chars_per_column + 1
-                if self.transposition_key.index(key) < full_columns
+                if new_key.index(key) < full_columns
                 else chars_per_column
             )
-            columns[self.transposition_key.index(key)] = encrypted_text[i : i + length]
+            columns[new_key.index(key)] = encrypted_text[i : i + length]
             i += length
 
         # Combine the columns to get the original encrypted text (before the transposition step)

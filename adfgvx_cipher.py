@@ -1,5 +1,4 @@
 import tkinter as tk
-import math
 from tkinter import filedialog
 from tkinter import messagebox
 
@@ -7,93 +6,111 @@ from tkinter import messagebox
 class ADFGVX:
     def __init__(self):
         self.adfgvx = "ADFGVX"
-        self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ"
-        self.key_phrase = None
-        self.transposition_key = None
-        self.polybius_square = None
+        self.alphabet = "ABCČDEFGHIJKLMNOPRSŠTUVZŽ0123456789X"
+        self.substitution_key = None  # ključna fraza
+        self.transposition_key = None  # ključ stolpcev
 
-    def create_polybius_square(self, key):
-        # Remove duplicate characters from the keyword and convert it to uppercase
-        key = "".join(sorted(set(key.upper()), key=key.upper().index))
-
-        # Create the remaining characters for the polybius square
-        remaining_chars = [char for char in self.alphabet if char not in key]
-        remaining_chars = "".join(remaining_chars)
-
-        # Combine the keyword and remaining characters to create the polybius square
-        self.polybius_square = key + remaining_chars
-
-        print(f"Polybius square: {self.polybius_square}")
-
-        return True
-
-    def set_key_phrase(self, key_phrase):
-        if self.create_polybius_square(key_phrase):
-            self.key_phrase = key_phrase
+    def set_substitution_key(self, substitution_key):
+        if self.create_polybius_square(substitution_key):
+            self.substitution_key = substitution_key
 
     def set_transposition_key(self, transposition_key):
         self.transposition_key = transposition_key
 
+    def create_polybius_square(self, key):
+        # Odstrani podvojene znake iz ključne besede in pretvori v velike črke
+        key = "".join(sorted(set(key.upper()), key=key.upper().index))
+
+        # Ustvari preostale znake za Polibijev kvadrat, ki niso v ključni besedi
+        remaining_chars = [char for char in self.alphabet if char not in key]
+        remaining_chars = "".join(remaining_chars)
+
+        # Kombiniraj ključno besedo in preostale znake za ustvarjanje Polibijevega kvadrata
+        self.polybius_square = key + remaining_chars
+
+        # print("Polibijev kvadrat:")
+        # for i in range(6):
+        #     print(self.polybius_square[i * 6 : (i + 1) * 6])
+
+        return True
+
     def encrypt(self, text):
         encrypted_text = ""
+        # print(f"text: {text}")
 
-        # Apply transposition by rearranging the columns based on the transposition key
-        num_columns = len(self.transposition_key)
-        num_rows = math.ceil(len(text) / num_columns)
-        transposed_text = ""
-
-        for i in range(num_columns):
-            column_index = self.transposition_key.index(str(i + 1))
-            for j in range(num_rows):
-                if j * num_columns + column_index < len(text):
-                    transposed_text += text[j * num_columns + column_index]
-
-        # Iterate over each character in the transposed text
-        for char in transposed_text:
-            # If the character is in the polybius square (ignoring case)
+        # Izvedi korak nadomestitve (Polibijev kvadrat)
+        for char in text:
             if char.upper() in self.polybius_square:
-                # Find the index of the character in the polybius square
                 index = self.polybius_square.index(char.upper())
-
-                # Calculate the row and column of the character in the polybius square
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
-
-                # Add the corresponding ADFGVX characters to the encrypted text
                 encrypted_text += row + column
 
-        # Return the encrypted text
-        return encrypted_text
+        # print(f"Zašifrirano besedilo: {encrypted_text}")
+
+        # Izvedi korak prenosa z uporabo uporabniškega ključa
+        transposed_text = [""] * len(self.transposition_key)
+        for i in range(len(encrypted_text)):
+            transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
+
+        # Ustvari nov ključ z dodanimi številkami
+        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+
+        # Preuredi stolpce glede na nov ključ
+        transposed_text = [
+            x
+            for _, x in sorted(zip(new_key, transposed_text), key=lambda pair: pair[0])
+        ]
+
+        return "".join(transposed_text)
 
     def decrypt(self, encrypted_text):
+        # Izračunaj število celih stolpcev
+        full_columns = len(encrypted_text) % len(self.transposition_key)
+
+        # Izračunaj število znakov na stolpec
+        chars_per_column = len(encrypted_text) // len(self.transposition_key)
+
+        # Ustvari seznam za shranjevanje stolpcev
+        columns = [""] * len(self.transposition_key)
+
+        # Ustvari nov ključ z dodanimi številkami
+        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+
+        # Razdeli znake nazaj na njihove originalne pozicije
+        i = 0
+        for key in sorted(new_key):
+            length = (
+                chars_per_column + 1
+                if new_key.index(key) < full_columns
+                else chars_per_column
+            )
+            columns[new_key.index(key)] = encrypted_text[i : i + length]
+            i += length
+
+        # Kombiniraj stolpce, da dobiš izvirno zašifrirano besedilo
         decrypted_text = ""
+        max_len = max(len(column) for column in columns)
+        for i in range(max_len):
+            for column in columns:
+                if i < len(column):
+                    decrypted_text += column[i]
 
-        # Iterate over each character in the encrypted text
-        for char in encrypted_text:
-            # If the character is in the polybius square (ignoring case)
-            if char.upper() in self.polybius_square:
-                # Find the index of the character in the polybius square
-                index = self.polybius_square.index(char.upper())
+        # Razveljavi korak nadomestitve (Polibijev kvadrat)
+        i = 0
+        while i < len(decrypted_text):
+            row = decrypted_text[i]
+            column = decrypted_text[i + 1]
+            index = self.adfgvx.index(row) * 6 + self.adfgvx.index(column)
+            if index < len(self.polybius_square):
+                decrypted_text = (
+                    decrypted_text[:i]
+                    + self.polybius_square[index]
+                    + decrypted_text[i + 2 :]
+                )
+            i += 1
 
-                # Calculate the row and column of the character in the polybius square
-                row = self.adfgvx[index // 6]
-                column = self.adfgvx[index % 6]
-
-                # Add the corresponding ADFGVX characters to the transposed text
-                decrypted_text += row + column
-
-        # Apply transposition by rearranging the columns based on the transposition key
-        num_columns = len(self.transposition_key)
-        num_rows = len(decrypted_text) // num_columns
-        transposed_text = ""
-
-        for i in range(num_columns):
-            column_index = self.transposition_key.index(str(i + 1))
-            for j in range(num_rows):
-                transposed_text += decrypted_text[j * num_columns + column_index]
-
-        # Return the decrypted text
-        return transposed_text
+        return decrypted_text
 
 
 class GUI:
@@ -106,28 +123,28 @@ class GUI:
         self.input_frame = tk.Frame(root)
         self.input_frame.grid(row=0, column=0, padx=20)
 
-        self.text_label = tk.Label(self.input_frame, text="Text:")
+        self.text_label = tk.Label(self.input_frame, text="Input:")
         self.text_label.grid(row=0, column=0)
-        self.input_box = tk.Text(self.input_frame, width=100, height=12)
+        self.input_box = tk.Text(self.input_frame, width=100, height=15)
         self.input_box.grid(row=1, column=0)
-        self.save_text_button = tk.Button(
-            self.input_frame, text="Save as..", command=self.save_input, width=5
-        )
-        self.save_text_button.grid(row=1, column=1)
 
-        self.key_phrase_label = tk.Label(self.input_frame, text="Key phrase:")
+        self.key_phrase_label = tk.Label(self.input_frame, text="Substitution key:")
         self.key_phrase_label.grid(row=2, column=0)
-        self.key_phrase_entry = tk.Text(self.input_frame, width=100, height=3)
-        self.key_phrase_entry.grid(row=3, column=0)
+        self.substitution_key_entry = tk.Entry(self.input_frame, width=77)
+        self.substitution_key_entry.grid(row=3, column=0)
+        validate_command = self.root.register(self.validate_substitution_key)
+        self.substitution_key_entry.config(
+            validate="key", validatecommand=(validate_command, "%P")
+        )
 
-        self.column_key_label = tk.Label(self.input_frame, text="Column key:")
+        self.column_key_label = tk.Label(self.input_frame, text="Transposition key:")
         self.column_key_label.grid(row=4, column=0)
-        self.column_key_entry = tk.Text(self.input_frame, width=100, height=3)
-        self.column_key_entry.grid(row=5, column=0)
+        self.transposition_key_entry = tk.Entry(self.input_frame, width=77)
+        self.transposition_key_entry.grid(row=5, column=0)
 
         self.output_label = tk.Label(self.input_frame, text="Output:")
         self.output_label.grid(row=6, column=0)
-        self.output_box = tk.Text(self.input_frame, width=100, height=12)
+        self.output_box = tk.Text(self.input_frame, width=100, height=15)
         self.output_box.grid(row=7, column=0)
         self.save_output_button = tk.Button(
             self.input_frame, text="Save as..", command=self.save_output, width=5
@@ -167,6 +184,9 @@ class GUI:
 
         self.input_text = ""
 
+    def validate_substitution_key(self, new_value):
+        return new_value == "" or new_value.isalpha()
+
     def switch_text(self):
         self.input_text = self.input_box.get("1.0", tk.END).strip()
         self.input_box.delete("1.0", tk.END)
@@ -192,9 +212,9 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        key_phrase = self.key_phrase_entry.get("1.0", tk.END).strip()
-        self.cipher.set_key_phrase(key_phrase)
-        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        substitution_key = self.substitution_key_entry.get().strip()
+        self.cipher.set_substitution_key(substitution_key)
+        transposition_key = self.transposition_key_entry.get().strip()
         self.cipher.set_transposition_key(transposition_key)
         encrypted_text = self.cipher.encrypt(text)
         self.output_box.delete("1.0", tk.END)
@@ -207,27 +227,13 @@ class GUI:
             if not self.input_text
             else self.input_text
         ).strip()
-        key_phrase = self.key_phrase_entry.get("1.0", tk.END).strip()
-        self.cipher.set_key_phrase(key_phrase)
-        transposition_key = self.column_key_entry.get("1.0", tk.END).strip()
+        substitution_key = self.substitution_key_entry.get().strip()
+        self.cipher.set_substitution_key(substitution_key)
+        transposition_key = self.transposition_key_entry.get().strip()
         self.cipher.set_transposition_key(transposition_key)
         decrypted_text = self.cipher.decrypt(text)
         self.output_box.delete("1.0", tk.END)
         self.output_box.insert(tk.END, decrypted_text.strip())
-        self.input_text = ""
-
-    def save_input(self):
-        text = (
-            self.input_box.get("1.0", tk.END)
-            if not self.input_text
-            else self.input_text
-        ).strip()
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt", filetypes=[("Text Files", "*.txt")]
-        )
-        with open(file_path, "w") as file:
-            file.write(text)
-        messagebox.showinfo("Saved", "Input saved successfully!")
         self.input_text = ""
 
     def save_output(self):

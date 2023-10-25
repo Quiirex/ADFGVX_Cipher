@@ -208,10 +208,25 @@ class GUI:
 
     def encrypt_text(self):
         text = (
-            self.input_box.get("1.0", tk.END)
-            if not self.input_text
-            else self.input_text
-        ).strip()
+            (
+                self.input_box.get("1.0", tk.END)
+                if not self.input_text
+                else self.input_text
+            )
+            .strip()
+            .replace("ô", "o")
+            .replace("ê", "e")
+            .replace("ú", "u")
+            .replace("ù", "u")
+            .replace("í", "i")
+            .replace("ì", "i")
+            .replace("á", "a")
+            .replace("à", "a")
+            .replace("é", "e")
+            .replace("è", "e")
+            .replace("ó", "o")
+            .replace("ò", "o")
+        )
         substitution_key = self.substitution_key_entry.get().strip()
         self.cipher.set_substitution_key(substitution_key)
         transposition_key = self.transposition_key_entry.get().strip()
@@ -223,10 +238,25 @@ class GUI:
 
     def decrypt_text(self):
         text = (
-            self.input_box.get("1.0", tk.END)
-            if not self.input_text
-            else self.input_text
-        ).strip()
+            (
+                self.input_box.get("1.0", tk.END)
+                if not self.input_text
+                else self.input_text
+            )
+            .strip()
+            .replace("ô", "o")
+            .replace("ê", "e")
+            .replace("ú", "u")
+            .replace("ù", "u")
+            .replace("í", "i")
+            .replace("ì", "i")
+            .replace("á", "a")
+            .replace("à", "a")
+            .replace("é", "e")
+            .replace("è", "e")
+            .replace("ó", "o")
+            .replace("ò", "o")
+        )
         substitution_key = self.substitution_key_entry.get().strip()
         self.cipher.set_substitution_key(substitution_key)
         transposition_key = self.transposition_key_entry.get().strip()

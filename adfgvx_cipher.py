@@ -45,22 +45,34 @@ class ADFGVX:
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
                 encrypted_text += row + column
+        # for i in range(len(self.transposition_key)):
+        #     print(
+        #         encrypted_text[
+        #             i
+        #             * len(self.transposition_key) : (i + 1)
+        #             * len(self.transposition_key)
+        #         ]
+        #     )
 
         # print(f"Zašifrirano besedilo: {encrypted_text}")
 
-        # Izvedi korak prenosa z uporabo uporabniškega ključa
+        # Izvedi korak transpozicije (stolpci)
         transposed_text = [""] * len(self.transposition_key)
+        # print(f"transposed_text: {transposed_text}")
         for i in range(len(encrypted_text)):
             transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
+        # print(f"transposed_text: {transposed_text}")
 
-        # Ustvari nov ključ z dodanimi številkami
+        # Ustvari nov ključ
         new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+        # print(f"new_key: {new_key}")
 
         # Preuredi stolpce glede na nov ključ
         transposed_text = [
             x
             for _, x in sorted(zip(new_key, transposed_text), key=lambda pair: pair[0])
         ]
+        # print(f"transposed_text: {transposed_text}")
 
         return "".join(transposed_text)
 
@@ -74,8 +86,9 @@ class ADFGVX:
         # Ustvari seznam za shranjevanje stolpcev
         columns = [""] * len(self.transposition_key)
 
-        # Ustvari nov ključ z dodanimi številkami
+        # Ključ z indeksi črk
         new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
+        # print(f"new_key: {new_key}")
 
         # Razdeli znake nazaj na njihove originalne pozicije
         i = 0

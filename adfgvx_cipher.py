@@ -28,9 +28,9 @@ class ADFGVX:
         # Kombiniraj ključno besedo in preostale znake za ustvarjanje Polibijevega kvadrata
         self.polybius_square = key + remaining_chars
 
-        # print("Polibijev kvadrat:")
-        # for i in range(6):
-        #     print(self.polybius_square[i * 6 : (i + 1) * 6])
+        print("Polibijev kvadrat:")
+        for i in range(6):
+            print(self.polybius_square[i * 6 : (i + 1) * 6])
 
         return True
 
@@ -45,14 +45,16 @@ class ADFGVX:
                 row = self.adfgvx[index // 6]
                 column = self.adfgvx[index % 6]
                 encrypted_text += row + column
-        # for i in range(len(self.transposition_key)):
-        #     print(
-        #         encrypted_text[
-        #             i
-        #             * len(self.transposition_key) : (i + 1)
-        #             * len(self.transposition_key)
-        #         ]
-        #     )
+
+        print(f"Encrypted text v mreži:")
+        for i in range(len(self.transposition_key)):
+            print(
+                encrypted_text[
+                    i
+                    * len(self.transposition_key) : (i + 1)
+                    * len(self.transposition_key)
+                ]
+            )
 
         # print(f"Zašifrirano besedilo: {encrypted_text}")
 
@@ -63,14 +65,19 @@ class ADFGVX:
             transposed_text[i % len(self.transposition_key)] += encrypted_text[i]
         # print(f"transposed_text: {transposed_text}")
 
-        # Ustvari nov ključ
-        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
-        # print(f"new_key: {new_key}")
+        # Indeksiraj ključ za prenos
+        indexed_transposition_key = [
+            f"{char}{i}" for i, char in enumerate(self.transposition_key)
+        ]
+        print(f"indexed_transposition_key: {indexed_transposition_key}")
 
         # Preuredi stolpce glede na nov ključ
         transposed_text = [
             x
-            for _, x in sorted(zip(new_key, transposed_text), key=lambda pair: pair[0])
+            for _, x in sorted(
+                zip(indexed_transposition_key, transposed_text),
+                key=lambda pair: pair[0],
+            )
         ]
         # print(f"transposed_text: {transposed_text}")
 
@@ -87,21 +94,30 @@ class ADFGVX:
         columns = [""] * len(self.transposition_key)
 
         # Ključ z indeksi črk
-        new_key = [f"{char}{i}" for i, char in enumerate(self.transposition_key)]
-        # print(f"new_key: {new_key}")
+        indexed_transposition_key = [
+            f"{char}{i}" for i, char in enumerate(self.transposition_key)
+        ]
+        # print(f"new_key: {indexed_transposition_key}")
 
         # Razdeli znake nazaj na njihove originalne pozicije
+        # To storimo tako, da iteriramo nad razvrščenim indexed_transposition_key
+        # in razrežemo encrypted_text na segmente ustrezne dolžine.
+        # Segmenti se nato dodelijo ustreznim nizom v stolpcih.
         i = 0
-        for key in sorted(new_key):
+        for key in sorted(indexed_transposition_key):
             length = (
                 chars_per_column + 1
-                if new_key.index(key) < full_columns
+                if indexed_transposition_key.index(key) < full_columns
                 else chars_per_column
             )
-            columns[new_key.index(key)] = encrypted_text[i : i + length]
+            columns[indexed_transposition_key.index(key)] = encrypted_text[
+                i : i + length
+            ]
             i += length
 
         # Kombiniraj stolpce, da dobiš izvirno zašifrirano besedilo
+        # To se izvede tako, da se iterira čez največjo dolžino stolpcev
+        # in doda znak s trenutnim indeksom iz vsakega stolpca v decrypted_text.
         decrypted_text = ""
         max_len = max(len(column) for column in columns)
         for i in range(max_len):
@@ -110,6 +126,9 @@ class ADFGVX:
                     decrypted_text += column[i]
 
         # Razveljavi korak nadomestitve (Polibijev kvadrat)
+        # To storimo tako, da iteriramo nad decrypted_text po dva znaka
+        # naenkrat, poiščemo ustrezen indeks v Polibijevem kvadratu
+        # in nadomestimo dva znaka z znakom na tem indeksu.
         i = 0
         while i < len(decrypted_text):
             row = decrypted_text[i]

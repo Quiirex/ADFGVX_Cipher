@@ -1,6 +1,6 @@
 # ADFGVX Cipher
 
-A python + tkinter application of the ADFGVX cipher for the Slovenian alphabet.
+A python + tkinter implementation of the ADFGVX cipher for the Slovenian alphabet from scratch.
 
 ## The background
 
